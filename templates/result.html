@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Result</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll on the body */
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px; /* Add space between rows */
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9; /* Light gray for even rows */
+        }
+        tr:nth-child(odd) {
+            background-color: #ffffff; /* White for odd rows */
+        }
+        .checkbox-label {
+            margin-bottom: 20px; /* Add gap between checkbox and button */
+            display: inline-flex;
+            align-items: center;
+        }
+        .btn-green {
+            background-color: #28a745; /* Green background */
+            border-color: #28a745; /* Match border color */
+            color: white; /* White text color */
+            margin-left: 10px; /* Space between dropdown and button */
+        }
+        .dropdown-inline {
+            display: flex;
+            align-items: center; /* Center items vertically */
+        }
+    </style>
+    <script>
+        function filterTables() {
+            var selectedName = document.getElementById('nameFilter').value;
+            var mainTable = document.getElementById('mainTable');
+            var tables = document.querySelectorAll('.additional-table');
+
+            // Show or hide based on the selection
+            if (selectedName === 'mainData') {
+                mainTable.style.display = 'block';
+                tables.forEach(function(table) {
+                    table.style.display = 'none';
+                });
+            } else {
+                mainTable.style.display = 'none';
+                tables.forEach(function(table) {
+                    if (table.getAttribute('data-name') === selectedName) {
+                        table.style.display = 'block';
+                    } else {
+                        table.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById('nameFilter').value = 'mainData'; // Set default selection
+            filterTables(); // Call filter function on page load
+        };
+    </script>
+    <script>
+        function filterRows() {
+            var checkbox = document.getElementById('qtyFilter');  // Get the checkbox
+            var allTables = document.querySelectorAll('table');   // Get all tables
+            var checkboxIcon = document.getElementById('checkboxIcon');
+            var checkboxUncheckedIcon = document.getElementById('checkboxUncheckedIcon');
+
+            // Toggle icon display
+            if (checkbox.checked) {
+                checkboxIcon.style.display = 'inline';  // Show checked icon
+                checkboxUncheckedIcon.style.display = 'none';  // Hide unchecked icon
+            } else {
+                checkboxIcon.style.display = 'none';  // Hide checked icon
+                checkboxUncheckedIcon.style.display = 'inline';  // Show unchecked icon
+            }
+
+            allTables.forEach(function(table) {
+                var rows = table.querySelectorAll('tbody tr'); // Get all rows in the table body
+
+                rows.forEach(function(row) {
+                    var qtyCellIndex = 5;  // Assuming 'qty' is in the 5th column
+                    var totalCellIndex = 12;  // Assuming 'total' is in the 10th column
+
+                    var qty = parseFloat(row.cells[qtyCellIndex].innerText);
+                    var total = parseFloat(row.cells[totalCellIndex].innerText);
+
+                    if (checkbox.checked) {
+                        row.style.display = qty > total ? '' : 'none';  // Show/hide rows based on qty > total
+                    } else {
+                        row.style.display = '';  // Show all rows
+                    }
+                });
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="/" class="btn btn-secondary me-3"><i class="fa-solid fa-backward"></i> Back</a>
+            <div class="flex-grow-1 text-center">
+                <h1 class="mb-4 glowing-header"> Item: {{ item }} <span>( {{ qty }} )</span></h1>
+            </div>
+        </div>  
+        <div class="d-flex align-items-center mb-3" style="gap: 20px;"> <!-- Flex container with gap -->
+            <div class="dropdown-inline">
+                <label for="nameFilter">Filter by:</label>
+                <select id="nameFilter" class="form-control mx-2" style="width: auto;" onchange="filterTables()">
+                    <option value="mainData" selected>Main Data</option> <!-- Keep only Main Data -->
+                    {% for name in names %}
+                        <option value="{{ name }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>       
+        
+            <label for="qtyFilter" class="checkbox-label d-flex align-items-center" style="margin-bottom: 0;"> <!-- Flex for checkbox alignment -->
+                Stock out
+                <i class="fas fa-check-square" id="checkboxIcon" style="display:none; margin-left: 10px;"></i>
+                <i class="far fa-square" id="checkboxUncheckedIcon" style="margin-left: 10px;"></i>
+                <input type="checkbox" id="qtyFilter" onchange="filterRows()" style="display:none;">
+            </label>
+        
+            <a href="/download_excel?bom_name={{ request.args.get('bom_name') }}&quantity={{ request.args.get('quantity', 1) }}" class="btn btn-green" style="margin-left: 10px;"><i class="fa-solid fa-file-excel"></i> Download Excel</a>
+            <a href="{{ url_for('display') }}" class="btn btn-info ms-3"><i class="fa-solid fa-tag"></i> Price from Recent Purchase Receipt</a>
+
+        </div>
+        
+        
+        <div id="mainTable">
+            {{ table|safe }}
+        </div>
+        <div>
+            {{ additional_tables|safe }}
+        </div>
+    </div>
+</body>
+</html>
