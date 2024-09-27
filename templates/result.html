@@ -25,10 +25,11 @@
         th, td {
             padding: 12px;
             text-align: left;
+            border-right: 1px solid #000000;
         }
         th {
             background-color: #f0f0f0;
-            color: #333;
+            color: #333333;
         }
         tr:nth-child(even) {
             background-color: #f9f9f9; /* Light gray for even rows */
@@ -51,12 +52,14 @@
             display: flex;
             align-items: center; /* Center items vertically */
         }
+        
     </style>
     <script>
         function filterTables() {
             var selectedName = document.getElementById('nameFilter').value;
             var mainTable = document.getElementById('mainTable');
             var tables = document.querySelectorAll('.additional-table');
+            var displayedNames = new Set(); // To track already displayed tables
 
             // Show or hide based on the selection
             if (selectedName === 'mainData') {
@@ -68,14 +71,19 @@
                 mainTable.style.display = 'none';
                 tables.forEach(function(table) {
                     if (table.getAttribute('data-name') === selectedName) {
-                        table.style.display = 'block';
+                        // If this name hasn't been displayed yet, show the table
+                        if (!displayedNames.has(selectedName)) {
+                            table.style.display = 'block';
+                            displayedNames.add(selectedName); // Mark this name as displayed
+                        } else {
+                            table.style.display = 'none'; // Hide subsequent duplicates
+                        }
                     } else {
-                        table.style.display = 'none';
+                        table.style.display = 'none'; // Hide other tables
                     }
                 });
             }
         }
-
         window.onload = function() {
             document.getElementById('nameFilter').value = 'mainData'; // Set default selection
             filterTables(); // Call filter function on page load
@@ -142,12 +150,23 @@
                 <i class="far fa-square" id="checkboxUncheckedIcon" style="margin-left: 10px;"></i>
                 <input type="checkbox" id="qtyFilter" onchange="filterRows()" style="display:none;">
             </label>
+            
         
-            <a href="/download_excel?bom_name={{ request.args.get('bom_name') }}&quantity={{ request.args.get('quantity', 1) }}" class="btn btn-green" style="margin-left: 10px;"><i class="fa-solid fa-file-excel"></i> Download Excel</a>
+            <div class="dropdown" style="position: relative;">
+                <button class="btn btn-green" onclick="toggleDropdown()" id="dropdownButton">
+                    <i class="fa-solid fa-file-excel"></i> Download Excel
+                </button>
+                <div id="dropdownMenu" class="dropdown-menu" style="display: none; position: absolute; z-index: 1000; background-color: white; border: 1px solid #3aee03; padding: 10px;">
+                    <a class="dropdown-item" href="/download_excel?bom_name={{ request.args.get('bom_name') }}&quantity={{ request.args.get('quantity', 1) }}">
+                         All Data
+                    </a>
+                    <a class="dropdown-item" href="/download_filtered_excel?bom_name={{ request.args.get('bom_name') }}&quantity={{ request.args.get('quantity', 1) }}">
+                         Stockout Data
+                    </a>
+                </div>
+            </div>           
             <a href="{{ url_for('display') }}" class="btn btn-info ms-3"><i class="fa-solid fa-tag"></i> Price from Recent Purchase Receipt</a>
-
         </div>
-        
         
         <div id="mainTable">
             {{ table|safe }}
@@ -155,6 +174,31 @@
         <div>
             {{ additional_tables|safe }}
         </div>
+        <div style="margin-left: 20px;">
+            *SO = Subcontracting Order
+        </div>
+        
+        <br>
+        
     </div>
 </body>
+<script>
+    function toggleDropdown() {
+        var dropdown = document.getElementById("dropdownMenu");
+        dropdown.style.display = dropdown.style.display === "none" || dropdown.style.display === "" ? "block" : "none";
+    }
+    
+    // Close dropdown when clicking outside
+    window.onclick = function(event) {
+        if (!event.target.matches('#dropdownButton')) {
+            var dropdowns = document.getElementsByClassName("dropdown-menu");
+            for (var i = 0; i < dropdowns.length; i++) {
+                var openDropdown = dropdowns[i];
+                if (openDropdown.style.display === "block") {
+                    openDropdown.style.display = "none";
+                }
+            }
+        }
+    }
+    </script>
 </html>

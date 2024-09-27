@@ -49,6 +49,12 @@
             <img src="static/ELEC.png" alt="Image" class="img-fluid" style="width: 10%; height: auto;">
         </h1>
         <h1 class="text-center mb-4">BOM Automation</h1>     
+
+        <!-- Error message display -->
+        {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+        {% endif %}
+
         <form action="/search" method="get">
             <div class="form-group">
                 <label for="bom_name">Enter Item :</label>
