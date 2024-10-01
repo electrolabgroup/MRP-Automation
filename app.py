@@ -2,17 +2,18 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 import pandas as pd
 import requests
 import re
+import os
 import numpy as np
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here' 
+app.secret_key = os.urandom(24)
 
 import pandas as pd
 import psycopg2
 
 def get_result_df():
     conn = psycopg2.connect(
-        host='localhost',
+        host='192.168.2.11',
         port=5432,
         database='postgres',
         user='postgres',  
@@ -99,14 +100,18 @@ def search():
             'qualitycontrol_quantity': 'Quality Control Quantity',
             'mahape_quantity': 'Mahape Quantity',
             'name': 'BOM Name',
-            'dictionary':'*SO to Supplier'
+            'dictionary':'*SO to Supplier',
+            'item_name': 'Item Name',
+            'item_code': 'Item Code',
+            'item': 'Item',
+            'qty': 'Quantity',
         })
         new_column_order = [ 
             'BOM Name',  
-            'item',
-            'item_name',
-            'item_code',
-            'qty',
+            'Item',
+            'Item Name',
+            'Item Code',
+            'Quantity',
             '*SO to Supplier', 
             '*SO Pending Quantity',
             'Mahape Quantity',
@@ -120,13 +125,13 @@ def search():
     final_df = rename_and_order_columns(final_df)
 
     def color_rows(row):
-        color = 'background-color: #ccffcc;' if row['qty'] <= row['Available Quantity'] else 'background-color: #ffcccc;'
+        color = 'background-color: #80ed99;' if row['Quantity'] <= row['Available Quantity'] else 'background-color: #f29a9a;'
         return [color] * len(row)
 
     styled_df = final_df.style.apply(color_rows, axis=1).set_table_attributes('class="table table-striped"')
 
     styled_df = styled_df.format({
-        'qty':'{:.3f}',
+        'Quantity':'{:.3f}',
         '*SO Pending Quantity': '{:.3f}',
         'Mahape Quantity': '{:.3f}',
         'Quality Control Quantity': '{:.3f}',
@@ -136,7 +141,7 @@ def search():
     })
     
     result_html = styled_df.to_html(index=False)
-    custom_number_row = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, '10 (7 + 8)', 11, '12(7+10)']
+    custom_number_row = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, '10 (8 + 9)', 11, '12(7+10)']
     def generate_table_html(styled_df, number_row):
         result_html = styled_df.to_html(index=False)
 
@@ -175,25 +180,28 @@ def search():
 
                 styled_additional_table_df = additional_table_df.style.apply(color_rows, axis=1).set_table_attributes('class="table table-striped"')
                 styled_additional_table_df = styled_additional_table_df.format({
-                    'qty':'{:.3f}',
-                    'Subcontracting Order Pending Quantity': '{:.3f}',
+                    'Quantity':'{:.3f}',
+                    '*SO Pending Quantity': '{:.3f}',
                     'Mahape Quantity': '{:.3f}',
                     'Quality Control Quantity': '{:.3f}',
-                    'Stock Mahape & QC': '{:.3f}',
+                    'Stock Mahape and QC': '{:.3f}',
                     'Pending Quantity': '{:.3f}',
                     'Available Quantity': '{:.3f}',
                 })
-                additional_table_html = styled_additional_table_df.to_html(index=False)
+
+                # Generate the additional table HTML with the custom number row
+                additional_table_html = generate_table_html(styled_additional_table_df, custom_number_row)
 
                 iteration_tables_html += f'<div class="additional-table" data-name="{item_name}"><h4>Data for {item_name}</h4>{additional_table_html}</div>'
 
                 next_item_codes.update(additional_data_df['item_name'].unique())
 
+
         if not iteration_tables_html:
-            break  # Exit loop if no additional tables were generated
+            break  
 
         additional_tables_html += iteration_tables_html
-        all_item_codes = list(next_item_codes)  # Update item codes for the next iteration
+        all_item_codes = list(next_item_codes)  
         iteration += 1
 
     if iteration > max_iterations:
@@ -630,7 +638,7 @@ import psycopg2
 # Database connection function
 def get_db_connection():
     return psycopg2.connect(
-        host='localhost',
+        host='192.168.2.11',
         port=5432,
         database='postgres',  # Use your database name
         user='postgres',  # Replace with your PostgreSQL username

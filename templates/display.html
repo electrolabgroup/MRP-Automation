@@ -14,7 +14,7 @@
         }
     
         .container {
-            width: 100%; /* Full width */
+            width: 110%; /* Full width */
             max-width: 1800px; /* Set a maximum width for the container */
             padding: 30px; /* Add padding for aesthetics */
             background-color: #f8f9fa; /* Light background color */
@@ -71,7 +71,7 @@
     
         /* Prevent header row from being affected by the hover effect */
         tr:hover th {
-            background-color: #3a3f44; /* Keep header background color on row hover */
+            background-color: #140442; /* Keep header background color on row hover */
         }
     
         .checkbox-label {
@@ -120,7 +120,7 @@
         </div>
         <div class="summary-section">
             <strong>Cost of Good : <i class="fa-solid fa-indian-rupee-sign"></i> </strong>{{ total_cost_sum }}<br>
-            <strong>Total Amount of Item to Purchase: <i class="fa-solid fa-indian-rupee-sign"></i> </strong>{{ amount_to_purchase_sum }}
+            <strong>Total Amount of Item to Purchase : <i class="fa-solid fa-indian-rupee-sign"></i> </strong>{{ amount_to_purchase_sum }}
             <br>
             <br>
             <a href="{{ url_for('display', download='excel') }}">

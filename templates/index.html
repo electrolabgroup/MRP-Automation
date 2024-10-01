@@ -7,11 +7,30 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        @keyframes waterWave {
+
+            75% {
+                opacity: 0.8;
+                transform: translateY(10px) scale(0.95);
+            }
+            100% {
+                opacity: 0.8;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .animated-title {
+            animation: waterWave 3s ease-in-out infinite;
+        }
+
+
         body {
-            background-color: #f8f9fa;
+            background: rgb(69,252,207);
+            background: linear-gradient(90deg, rgba(69,252,207,1) 0%, rgba(235,178,234,1) 50%, rgba(69,252,207,1) 100%);
             margin: 0;
             padding: 0;
         }
+
         .container {
             margin-top: 50px;
             max-width: 600px;
@@ -46,9 +65,11 @@
 <body>
     <div class="container">
         <h1 class="text-center mb-4">
+            <br>
+            <br>
             <img src="static/ELEC.png" alt="Image" class="img-fluid" style="width: 10%; height: auto;">
         </h1>
-        <h1 class="text-center mb-4">BOM Automation</h1>     
+        <h1 class="text-center mb-4 animated-title">BOM Automation</h1>
 
         <!-- Error message display -->
         {% if error_message %}
