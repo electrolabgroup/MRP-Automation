@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import pandas as pd
 import requests
@@ -679,3 +680,5 @@ def suggest():
 
 if __name__ == '__main__':
     app.run(debug=True)
+=======
+>>>>>>> cc26daf9e3104ada162ccecda3b9e9b0eb2b5a28
