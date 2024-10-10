@@ -110,28 +110,80 @@
 </head>
 <body>
     <div class="container table-container mt-5">
-        <a href="{{ url_for('search', bom_name=item, quantity=qty) }}" class="btn btn-secondary mb-3"><i class="fa-solid fa-backward"></i> Back</a>
-
-        <a href="{{ url_for('index') }}" class="btn btn-primary mb-3"><i class="fa-solid fa-magnifying-glass"></i> BOM List</a>
-
-
+        <a href="{{ url_for('search', bom_name=item, quantity=qty) }}" class="btn btn-secondary mb-3">
+            <i class="fa-solid fa-backward"></i> Back
+        </a>
+    
+        <a href="{{ url_for('index') }}" class="btn btn-primary mb-3">
+            <i class="fa-solid fa-magnifying-glass"></i> BOM List
+        </a>
+    
         <div class="flex-grow-1 text-center">
             <h1 class="mb-4 glowing-header"> Item: {{ item }} <span>( {{ qty }} )</span></h1>
         </div>
         <div class="summary-section">
             <strong>Cost of Good : <i class="fa-solid fa-indian-rupee-sign"></i> </strong>{{ total_cost_sum }}<br>
             <strong>Total Amount of Item to Purchase : <i class="fa-solid fa-indian-rupee-sign"></i> </strong>{{ amount_to_purchase_sum }}
-            <br>
-            <br>
-            <a href="{{ url_for('display', download='excel') }}">
-                <button><i class="fa-solid fa-file-excel"></i> Download Excel</button>
-            </a>
+            <br><br>
+    
+            <div class="d-flex align-items-center">
+                <a href="{{ url_for('display', download='excel') }}">
+                    <button class="btn btn-success me-2"><i class="fa-solid fa-file-excel"></i> Download Excel</button>
+                </a>
+    
+                <label for="qtyFilter" class="checkbox-label d-flex align-items-center mb-0" style="display:none; margin-left: 50px;">
+                    Check Stockout Item Price 
+                    <i class="fas fa-check-square" id="checkboxIcon" style="display:none; margin-left: 10px;"></i>
+                    <i class="far fa-square" id="checkboxUncheckedIcon" style="margin-left: 10px;"></i>
+                    <input type="checkbox" id="qtyFilter" onchange="filterRows()" style="display:none;">
+                </label>
+            </div>
         </div>
+    
         <div class="table-responsive">
             <table class="table table-bordered custom-table">
                 {{ table|safe }}  
             </table>
         </div>
     </div>
+    
 </body>
+<script>
+    function filterRows() {
+        var checkbox = document.getElementById('qtyFilter');  
+        var allTables = document.querySelectorAll('table');   
+        var checkboxIcon = document.getElementById('checkboxIcon');
+        var checkboxUncheckedIcon = document.getElementById('checkboxUncheckedIcon');
+
+        // Toggle icon display
+        if (checkbox.checked) {
+            checkboxIcon.style.display = 'inline';  
+            checkboxUncheckedIcon.style.display = 'none';  
+        } else {
+            checkboxIcon.style.display = 'none';  // Hide checked icon
+            checkboxUncheckedIcon.style.display = 'inline';  // Show unchecked icon
+        }
+
+        allTables.forEach(function(table) {
+            var rows = table.querySelectorAll('tbody tr'); // Get all rows in the table body
+
+            rows.forEach(function(row) {
+                var amountCellIndex = 7; // 8th column (0-indexed, so index 7)
+                var amountValue = row.cells[amountCellIndex].innerText.trim(); // Get the amount value from the cell
+
+                if (checkbox.checked) {
+                    // Hide rows with 'NA' or 'Not Found'
+                    if (amountValue === 'NA' || amountValue === 'Not Found') {
+                        row.style.display = 'none';  // Hide the row
+                    } else {
+                        row.style.display = '';  // Show the row
+                    }
+                } else {
+                    row.style.display = ''; 
+                }
+            });
+        });
+    }
+</script>
+
 </html>

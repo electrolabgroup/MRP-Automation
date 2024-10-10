@@ -83,6 +83,7 @@ def search():
         'qualitycontrol_quantity',
         'stock_mahape_qc',
         'pending_qty',
+        'inhouse_quantity',
         'total'
     ]
 
@@ -104,18 +105,20 @@ def search():
             'item_name': 'Item Name',
             'item_code': 'Item Code',
             'item': 'Item',
-            'qty': 'Quantity',
+            'inhouse_quantity':'InHouse Quantity',
+            'qty': 'Required Quantity',
         })
         new_column_order = [ 
             'BOM Name',  
             'Item',
             'Item Name',
             'Item Code',
-            'Quantity',
+            'Required Quantity',
             '*SO to Supplier', 
             '*SO Pending Quantity',
             'Mahape Quantity',
             'Quality Control Quantity',
+            'InHouse Quantity',
             'Stock Mahape and QC',
             'Pending Quantity',
             'Available Quantity'
@@ -125,23 +128,24 @@ def search():
     final_df = rename_and_order_columns(final_df)
 
     def color_rows(row):
-        color = 'background-color: #80ed99;' if row['Quantity'] <= row['Available Quantity'] else 'background-color: #f29a9a;'
+        color = 'background-color: #80ed99;' if row['Required Quantity'] <= row['Available Quantity'] else 'background-color: #f29a9a;'
         return [color] * len(row)
 
     styled_df = final_df.style.apply(color_rows, axis=1).set_table_attributes('class="table table-striped"')
 
     styled_df = styled_df.format({
-        'Quantity':'{:.3f}',
+        'Required Quantity':'{:.3f}',
         '*SO Pending Quantity': '{:.3f}',
         'Mahape Quantity': '{:.3f}',
         'Quality Control Quantity': '{:.3f}',
         'Stock Mahape and QC': '{:.3f}',
         'Pending Quantity': '{:.3f}',
+        'InHouse Quantity': '{:.3f}',
         'Available Quantity': '{:.3f}',
     })
     
     result_html = styled_df.to_html(index=False)
-    custom_number_row = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, '10 (8 + 9)', 11, '12(7+10)']
+    custom_number_row = ['', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, '11(8+9+10)',12 ,'13(7+10)']
     def generate_table_html(styled_df, number_row):
         result_html = styled_df.to_html(index=False)
 
@@ -180,12 +184,13 @@ def search():
 
                 styled_additional_table_df = additional_table_df.style.apply(color_rows, axis=1).set_table_attributes('class="table table-striped"')
                 styled_additional_table_df = styled_additional_table_df.format({
-                    'Quantity':'{:.3f}',
+                    'Required Quantity':'{:.3f}',
                     '*SO Pending Quantity': '{:.3f}',
                     'Mahape Quantity': '{:.3f}',
                     'Quality Control Quantity': '{:.3f}',
                     'Stock Mahape and QC': '{:.3f}',
                     'Pending Quantity': '{:.3f}',
+                    'InHouse Quantity': '{:.3f}',
                     'Available Quantity': '{:.3f}',
                 })
 
@@ -421,6 +426,8 @@ def download_excel():
         final_df = pd.merge(bom_filtered_df, result_df, on=['item_code'], how='left')
         final_df = final_df.fillna(0)
         final_df['qty'] = (final_df['qty'] * quantity)
+        final_df.rename(columns={'qty': 'Required Quantity'}, inplace=True)
+
         final_df = final_df.rename(columns={
             'so_pending_qty': '*SO Pending Quantity',
             'stock_mahape_qc': 'Stock Mahape and QC',
@@ -428,6 +435,7 @@ def download_excel():
             'pending_qty': 'Pending Quantity',
             'qualitycontrol_quantity': 'Quality Control Quantity',
             'mahape_quantity': 'Mahape Quantity',
+            'inhouse_quantity':'InHouse Quantity',
             'name': 'BOM Name',
             'dictionary': '*SO to Supplier'
         })
@@ -436,11 +444,12 @@ def download_excel():
             'item',
             'item_name',
             'item_code',
-            'qty',
+            'Required Quantity',
             '*SO to Supplier', 
             '*SO Pending Quantity',
             'Mahape Quantity',
             'Quality Control Quantity',
+            'InHouse Quantity',
             'Stock Mahape and QC',
             'Pending Quantity',
             'Available Quantity'
@@ -464,7 +473,6 @@ def download_excel():
                     additional_table_df['qty'] = (additional_table_df['qty'] * quantity)
                     additional_table_df['item'] = item_code
 
-                    # Apply renaming and column order to additional tables
                     additional_table_df = additional_table_df.rename(columns={
                         'so_pending_qty': '*SO Pending Quantity',
                         'stock_mahape_qc': 'Stock Mahape and QC',
@@ -472,8 +480,10 @@ def download_excel():
                         'pending_qty': 'Pending Quantity',
                         'qualitycontrol_quantity': 'Quality Control Quantity',
                         'mahape_quantity': 'Mahape Quantity',
+                        'inhouse_quantity':'InHouse Quantity',
                         'name': 'BOM Name',
-                        'dictionary': '*SO to Supplier'
+                        'dictionary': '*SO to Supplier',
+                        'qty': 'Required Quantity'  # Add this line
                     })
                     additional_table_df = additional_table_df[new_column_order]
 
@@ -496,7 +506,7 @@ def download_excel():
         output.seek(0)
 
         # Send the Excel file as a downloadable response
-        return send_file(output, as_attachment=True, download_name=f'{bom_name}_data.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        return send_file(output, as_attachment=True, download_name=f'{bom_name}.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
     except Exception as e:
@@ -549,6 +559,7 @@ def download_filtered_excel():
             'qualitycontrol_quantity': 'Quality Control Quantity',
             'mahape_quantity': 'Mahape Quantity',
             'name': 'BOM Name',
+            'qty': 'Required Quantity', 
             'dictionary':'*SO to Supplier',
             'total':'Available Quantity'
         })
@@ -557,18 +568,19 @@ def download_filtered_excel():
             'item',
             'item_name',
             'item_code',
-            'qty',
+            'Required Quantity',
             '*SO to Supplier', 
             '*SO Pending Quantity',
             'Mahape Quantity',
             'Quality Control Quantity',
+            'inhouse_quantity',
             'Stock Mahape and QC',
             'Pending Quantity',
             'Available Quantity']
 
         final_df = final_df[new_column_order]
 
-        filtered_df = final_df[final_df['qty'] > final_df['Available Quantity']]
+        filtered_df = final_df[final_df['Required Quantity'] > final_df['Available Quantity']]
 
         # Prepare for additional tables
         additional_tables = []
@@ -601,6 +613,7 @@ def download_filtered_excel():
                             'mahape_quantity': 'Mahape Quantity',
                             'name': 'BOM Name',
                             'dictionary': '*SO to Supplier',
+                            'qty': 'Required Quantity', 
                             'total':'Available Quantity'
                         })
 
@@ -665,4 +678,4 @@ def suggest():
     return jsonify(suggestions)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=7410)
+    app.run(debug=True)
