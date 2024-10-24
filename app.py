@@ -656,7 +656,7 @@ import psycopg2
 # Database connection function
 def get_db_connection():
     return psycopg2.connect(
-        host='localhost',
+        host='192.168.2.11',
         port=5432,
         database='postgres',  # Use your database name
         user='postgres',  # Replace with your PostgreSQL username
