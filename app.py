@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import pandas as pd
 import requests
@@ -36,9 +35,11 @@ def get_result_df():
 @app.route('/search', methods=['GET'])
 def search():
     bom_name = request.args.get('bom_name')
-    quantity = int(request.args.get('quantity')) 
-    session['item'] = bom_name
+    quantity = int(request.args.get('quantity'))
+    error_message = None 
+    session['bom_name'] = bom_name
     session['qty'] = quantity
+    session['item'] = None
 
     if not bom_name:
         error_message = "BOM name is incorrect X."
@@ -68,10 +69,12 @@ def search():
     except requests.RequestException as e:
         return jsonify({'error': 'Failed to fetch BOM data'}), 500
 
-    bom_filtered_df = bom_df[bom_df['item'] == bom_name]
+    bom_filtered_df = bom_df[bom_df['name'] == bom_name]
     if bom_filtered_df.empty:
         error_message = "BOM name is incorrect."
         return render_template('index.html', error_message=error_message)
+
+    session['item'] = bom_filtered_df['item'].iloc[0]
 
     final_df = pd.merge(bom_filtered_df, result_df, on=['item_code'], how='left')
     final_df = final_df.fillna(0)
@@ -215,13 +218,14 @@ def search():
 
     names = sorted(list(item_names))
 
-    return render_template('result.html', table=result_html, additional_tables=additional_tables_html, names=names, item=bom_name,qty=quantity)
+    return render_template('result.html', table=result_html, additional_tables=additional_tables_html, names=names, item=bom_name,bom_name=bom_name,qty=quantity)
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 
 
 @app.route('/display', methods=['GET'])
 def display():
+    bom_name = session.get('bom_name')
     item = session.get('item')
     qty = session.get('qty')
 
@@ -381,7 +385,7 @@ def display():
         return send_file(output, as_attachment=True, download_name=filename, 
                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-    return render_template('display.html', item=item, qty=qty, table=merged_html,
+    return render_template('display.html', item=item,bom_name = bom_name ,qty=qty,table=merged_html,
                         total_cost_sum=total_cost_sum, amount_to_purchase_sum=amount_to_purchase_sum)
 
 import io
@@ -421,7 +425,7 @@ def download_excel():
         data = response.json()
         bom_df = pd.DataFrame(data['data'])
 
-        bom_filtered_df = bom_df[bom_df['item'] == bom_name]
+        bom_filtered_df = bom_df[bom_df['name'] == bom_name]
 
         # Merge BOM data with result_df
         final_df = pd.merge(bom_filtered_df, result_df, on=['item_code'], how='left')
@@ -545,7 +549,7 @@ def download_filtered_excel():
         data = response.json()
         bom_df = pd.DataFrame(data['data'])
 
-        bom_filtered_df = bom_df[bom_df['item'] == bom_name]
+        bom_filtered_df = bom_df[bom_df['name'] == bom_name]
 
         # Merge BOM data with result_df
         final_df = pd.merge(bom_filtered_df, result_df, on=['item_code'], how='left')
@@ -652,7 +656,7 @@ import psycopg2
 # Database connection function
 def get_db_connection():
     return psycopg2.connect(
-        host='192.168.2.11',
+        host='localhost',
         port=5432,
         database='postgres',  # Use your database name
         user='postgres',  # Replace with your PostgreSQL username
@@ -680,5 +684,3 @@ def suggest():
 
 if __name__ == '__main__':
     app.run(debug=True)
-=======
->>>>>>> cc26daf9e3104ada162ccecda3b9e9b0eb2b5a28

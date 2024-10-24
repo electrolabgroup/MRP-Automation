@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -111,7 +110,7 @@
 </head>
 <body>
     <div class="container table-container mt-5">
-        <a href="{{ url_for('search', bom_name=item, quantity=qty) }}" class="btn btn-secondary mb-3">
+        <a href="{{ url_for('search', bom_name=bom_name, quantity=qty) }}" class="btn btn-secondary mb-3">
             <i class="fa-solid fa-backward"></i> Back
         </a>
     
@@ -120,7 +119,7 @@
         </a>
     
         <div class="flex-grow-1 text-center">
-            <h1 class="mb-4 glowing-header"> Item: {{ item }} <span>( {{ qty }} )</span></h1>
+            <h1 class="mb-4 glowing-header"> BOM Name : {{ bom_name }} <span>( {{ qty }} )</span></h1>
         </div>
         <div class="summary-section">
             <strong>Cost of Good : <i class="fa-solid fa-indian-rupee-sign"></i> </strong>{{ total_cost_sum }}<br>
@@ -188,5 +187,3 @@
 </script>
 
 </html>
-=======
->>>>>>> cc26daf9e3104ada162ccecda3b9e9b0eb2b5a28
